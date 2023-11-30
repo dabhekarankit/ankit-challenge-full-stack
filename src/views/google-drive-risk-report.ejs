@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>Get a free Risk Report</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    .navbar {
+      background-color: #58469b !important;
+      color: #ffffff !important;
+      /* height: 140px; */
+    }
+
+    .removeAccessBtn {
+      color: #ff9292 !important;
+    }
+  </style>
+</head>
+
+<body class="bg-secondary" style="--bs-bg-opacity: .2;">
+  <div class="w-100 h-75 h-lg-100 p-5" style="background-color: #58469b !important;height: 400px !important;">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <span class="btn border border-danger removeAccessBtn p-2 mt-2" onclick="removeAccess()">Remove Access</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class=" mt-5">
+      <span class="text-white fs-5">
+        <i class="fa-solid fa-lock me-2"></i>
+        We do not scan the contents of files. Scan results are never stored.
+      </span>
+      <div class="card mt-4 ">
+        <div class="card-header row">
+          <div class="col-md-6">
+            <span style="font-size: 40px;font-weight: 100;">
+              <img src="<%=process.env.APP_URL%>/public/images/drive.svg" height="40">
+              Google Drive Risk Report
+            </span>
+          </div>
+          <!-- <div class="col-md-6 text-end my-auto">
+            <b class="">Risk Score:</b> <span class="btn" style="background-color: #ffbdbd;">HIGH</span></h1>
+          </div> -->
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3 p-1">
+              <div class="border border-default text-center p-4">
+                <i class="fa-solid fa-star p-4 btn rounded-circle" style="background-color: #ffbdbd;"></i>
+                <h1 class="riskScoreCount">0</h1>
+                <b>Risk Score</b>
+                <p>
+                  Risk Score calculated base on how many files you shared publicly.
+                </p>
+              </div>
+            </div>
+            <div class="col-md-3 p-1">
+              <div class="border border-default text-center p-4">
+                <i class="fa-solid fa-globe p-4 btn rounded-circle" style="background-color: #bde6ff;"></i>
+                <h1 class="anyoneWithTheLinkfileCounts">0</h1>
+                <b>Public Files</b>
+                <p>
+                  Files that are available to anyone over the web via link sharing.
+                </p>
+              </div>
+            </div>
+            <div class="col-md-3 p-1">
+              <div class="border border-default text-center p-4">
+                <i class="fa-solid fa-users p-4 btn rounded-circle" style="background-color: #e9ffbd;"></i>
+                <h1 class="driveAccessCount">0</h1>
+                <b>People with access</b>
+                <p>
+                  People who have access to files in your Google Drive.
+                </p>
+              </div>
+            </div>
+            <div class="col-md-3 p-1">
+              <div class="border border-default text-center p-4">
+                <i class="fa-solid fa-file p-4 btn rounded-circle" style="background-color: #ffbdfe;"></i>
+                <h1 class="externallySharedFileCounts">0</h1>
+                <b>Files shared externally</b>
+                <p>
+                  Files that have been shared directly with other people.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <p class="fs-5">
+            1. <span class="anyoneWithTheLinkfileCounts">0</span> files are publicly accessible for anyone with the link
+          </p>
+          <div id="anyoneWithTheLinkfileHtml"></div>
+
+          <hr class="my-4">
+
+          <p class="fs-5">
+            2. There are <span class="driveAccessCount">0</span> people with access to your Google Drive
+          </p>
+          <div id="driveAccessHtml"></div>
+
+          <hr class="my-4">
+
+          <p class="fs-5">
+            3. <span class="externallySharedFileCounts">0</span> files are shared externally
+          </p>
+          <div id="externallySharedFileHtml"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<script>
+  if (!localStorage.getItem("GDriveUserAuthTokn")) {
+    window.location = "/"
+  }
+
+  let removeAccess = () => {
+    $.ajax({
+      url: `/api/v1/oauth/revoke-token`,
+      type: "post",
+      data: {
+        token: localStorage.getItem("GDriveUserAuthTokn")
+      },
+      success: function(response) {
+        localStorage.removeItem("GDriveUserAuthTokn");
+        window.location = "/"
+      },
+      error: function(response) {
+        console.log(response);
+        // alert(response.responseJSON.message)
+        if (response.responseJSON.message == "invalid_token") {
+          delete document.cookie;
+          window.location = "/"
+        }
+      },
+    });
+  }
+
+  $(document).ready(() => {
+    getData();
+  })
+
+  function getData() {
+    $.ajax({
+      url: `/api/v1/oauth/get-data`,
+      type: "post",
+      data: {
+        token: localStorage.getItem("GDriveUserAuthTokn")
+      },
+      success: function(response) {
+        console.log(response);
+        setAnyoneWithTheLinkfiles(response.data.anyoneWithTheLinkfiles.slice(0, 10))
+        $(".anyoneWithTheLinkfileCounts").text(response.data.anyoneWithTheLinkfileCounts);
+        setExternallySharedFiles(response.data.externallySharedFiles.slice(0, 10));
+        $(".externallySharedFileCounts").text(response.data.externallySharedFileCounts);
+        driveAccessUser(response.data.driveAccess.slice(0, 5));
+        $(".driveAccessCount").text(response.data.driveAccessCount);
+        $(".riskScoreCount").text(response.data.riskCount);
+      },
+      error: function(response) {
+        console.log(response);
+        // alert(response.responseJSON.message)
+        window.location = "/  "
+      },
+    });
+  }
+
+  function setAnyoneWithTheLinkfiles(files) {
+    let html = "";
+    if (files.length == 0) {
+      html = "<p>There are no files to show.</p>";
+    } else {
+      html = `<div class="card">
+                <div class="card-body">
+                  <table class="table">
+                    <tr>
+                      <th>File name</th>
+                      <th>Access setting</th>
+                      <th>Shared with</th>
+                      <th>Created by</th>
+                    </tr>`;
+
+      files.map(file => {
+        let sharedCount = (file.permissions.filter(permission => {
+          return permission.type == 'user' && permission.role != "owner"
+        })).length;
+
+        html += `<tr>
+                    <td>
+                      <i class="fa fa-file"></i>
+                      <a href="${file.webViewLink}" style="text-decoration: dashed;color: #000;">
+                        ${file.name}
+                      </a>
+                    </td>
+                    <td>
+                      <a href="${file.webViewLink}" class="btn">
+                        <span class="bg-secondary border rounded-pill py-1 px-2 ">
+                          <i class="fa fa-globe"></i>
+                          Anyone with link
+                        </span>
+                      </a>
+                    </td>
+                    <td>
+                      <a href="google.com" class="btn">
+                        <i class="fa fa-users"> </i> ${sharedCount}
+                      </a>
+                    </td>
+                    <td>
+                      <a href="${file.webViewLink}" class="btn">
+                        <img width="40" class="rounded rounded-circle" src="${file.owners[0].photoLink}"> ${file.owners[0].displayName}
+                      </a>
+                    </td>
+                  </tr>`;
+      })
+      html += `</table>
+            </div>
+          </div>`;
+    }
+
+    $("#anyoneWithTheLinkfileHtml").html(html);
+  }
+
+  function setExternallySharedFiles(files) {
+    let html = "";
+    if (files.length == 0) {
+      html = "<p>There are no externally shared files to show.</p>";
+    } else {
+      html = `<div class="card">
+                <div class="card-body">
+                  <table class="table">
+                    <tr>
+                      <th>File name</th>
+                      <th>Access setting</th>
+                      <th>Shared with</th>
+                      <th>Created by</th>
+                    </tr>`;
+
+      files.map(file => {
+        let sharedCount = (file.permissions.filter(permission => {
+          return permission.type == 'user' && permission.role != "owner"
+        })).length;
+
+        html += `<tr>
+                    <td>
+                      <i class="fa fa-file"></i>
+                      <a href="${file.webViewLink}" style="text-decoration: dashed;color: #000;">
+                        ${file.name}
+                      </a>
+                    </td>
+                    <td>
+                      <a href="${file.webViewLink}" class="btn">
+                        <span class="bg-secondary border rounded-pill py-1 px-2 ">
+                          <i class="fa fa-globe"></i>
+                          Anyone with link
+                        </span>
+                      </a>
+                    </td>
+                    <td>
+                      <a href="google.com" class="btn">
+                        <i class="fa fa-users"> </i> ${sharedCount}
+                      </a>
+                    </td>
+                    <td>
+                      <a href="${file.webViewLink}" class="btn">
+                        <img width="40" class="rounded rounded-circle" src="${file.owners[0].photoLink}"> ${file.owners[0].displayName}
+                      </a>
+                    </td>
+                  </tr>`;
+      })
+      html += `</table>
+            </div>
+          </div>`;
+    }
+
+    $("#externallySharedFileHtml").html(html);
+  }
+
+  function driveAccessUser(users) {
+    let html = "";
+    if (users.length == 0) {
+      html = "<p>There are no people with access to show.</p>";
+    } else {
+      users.map((user, index) => {
+        html += `<div class="accordion" id="accordionExample">
+                  <div class="card">
+                    <div class="card-header" id="headingOne">
+                      <div class="mb-0 w-100 row" data-bs-toggle="collapse" href="#collapseExample${index}" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        <div class="col-md-6">${user.displayName}</div>
+                        <div class="col-md-6 text-end">Has access to <i class="fa fa-file"></i> ${user.files.length} files</div>
+                      </div>
+                    </div>
+                    <div id="collapseExample${index}" class="collapse ${index == 0?'show':''}" aria-labelledby="headingOne" data-parent="#accordionExample">
+                      <div class="card-body">
+                        <table class="table">
+                          <tr>
+                            <th>File name</th>
+                            <th>Access setting</th>
+                            <th>Shared with</th>
+                            <th>Created by</th>
+                          </tr>`;
+
+        user.files.slice(0, 5).map(file => {
+          let sharedCount = (file.permissions.filter(permission => {
+            return permission.type == 'user' && permission.role != "owner"
+          })).length;
+
+          html += `<tr>
+                    <td>
+                      <i class="fa fa-file"></i>
+                      <a href="${file.webViewLink}" style="text-decoration: dashed;color: #000;">
+                        ${file.name}
+                      </a>
+                    </td>
+                    <td>
+                      <a href="${file.webViewLink}" class="btn">
+                        <span class="bg-secondary border rounded-pill py-1 px-2 ">
+                          <i class="fa fa-globe"></i>
+                          Anyone with link
+                        </span>
+                      </a>
+                    </td>
+                    <td>
+                      <a href="google.com" class="btn">
+                        <i class="fa fa-users"> </i> ${sharedCount}
+                      </a>
+                    </td>
+                    <td>
+                      <a href="${file.webViewLink}" class="btn">
+                        <img width="40" class="rounded rounded-circle" src="${file.owners[0].photoLink}"> ${file.owners[0].displayName}
+                      </a>
+                    </td>
+                  </tr>`
+        })
+
+        html += `</table>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      })
+    }
+
+    $("#driveAccessHtml").html(html);
+  }
+</script>
+
+
+</html>

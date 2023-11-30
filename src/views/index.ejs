@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>Get a free Risk Report</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+
+<body class="bg-light">
+  <div class="container-fluid p-5 w-75">
+    <h3 class="mb-5">Get a free Risk Report</h3>
+    <form action="/api/v1/oauth/get-auth-url" method="post" class="customeForm">
+      <div class="row">
+        <div class="col-md-6 py-4">
+          <label for="firstName" class="form-label">First Name</label>
+          <input type="text" class="form-control" id="firstName" name="firstName" placeholder="First Name" required>
+        </div>
+        <div class="col-md-6 py-4">
+          <label for="lastName" class="form-label">Last Name</label>
+          <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Last Name" required>
+        </div>
+        <div class="col-md-6 py-4">
+          <label for="jobTitle" class="form-label">Job Title</label>
+          <input type="text" class="form-control" id="jobTitle" name="jobTitle" placeholder="Job Title" required>
+        </div>
+        <div class="col-md-6 py-4">
+          <label for="country" class="form-label">Country/Region</label>
+          <input type="text" class="form-control" id="country" name="country" placeholder="Country/Region" required>
+        </div>
+        <div class="col-md-6 py-4">
+          <label for="businessEmail" class="form-label">Business Email</label>
+          <input type="email" class="form-control" id="businessEmail" name="businessEmail" placeholder="Business Email" required>
+        </div>
+        <div class="col-md-6 py-4">
+          <label for="company" class="form-label">Company Name</label>
+          <input type="text" class="form-control" id="company" name="company" placeholder="Company Name" required>
+        </div>
+        <div class="col-md-6 py-4">
+          <label for="number" class="form-label">Phone Number</label>
+          <input type="number" class="form-control" id="number" name="number" placeholder="" required>
+        </div>
+        <div class="col-md-12 py-4">
+          <button type="submit" class="btn btn-success">Submit</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</body>
+
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script>
+  if (localStorage.getItem("GDriveUserAuthTokn")) {
+    window.location = "/google-drive-risk-report"
+  }
+
+
+  $(".customeForm").submit(function(event) {
+    event.preventDefault();
+    var form = $(this);
+    var url = form.attr("action");
+    var method = form.attr("method");
+    var redirect = form.attr("redirect");
+    var formData = new FormData(this);
+    var btnText = $(this).find(":submit").html();
+    $(this).find(":submit").prop("disabled", true);
+    $(this).find(":submit").html(`<i class="fa fa-spinner fa-spin"></i>&nbsp;&nbsp;${btnText}`);
+    $(".custom_alert").remove();
+
+    let ajaxConfig = {
+      cache: false,
+      contentType: false,
+      processData: false,
+    };
+    if (form.attr("enctype") !== "multipart/form-data") {
+      formData = Object.fromEntries(formData.entries());
+      ajaxConfig = {};
+    }
+
+    $.ajax({
+      url: url,
+      type: method,
+      data: formData, //Object.fromEntries(formData.entries()),
+      ...ajaxConfig,
+      success: function(response) {
+        console.log(response);
+        sendformSuccess(response, form);
+        if (response.url) {
+          setTimeout(function() {
+            window.location.replace(response.url);
+          }, 500);
+        } else {
+          form.find(":submit").html(btnText);
+          form.find(":submit").prop("disabled", false);
+        }
+      },
+      error: function(response) {
+        console.log(response);
+        form.find(":submit").html(btnText);
+        form.find(":submit").prop("disabled", false);
+        sendFormError(response, form);
+      },
+    });
+  });
+
+  function sendformSuccess(response, form) {
+    const html = `<div class="alert alert-success fade show custom_alert">
+                  ${response.message}
+                </div>`;
+    form.prepend(html);
+  }
+
+  function sendFormError(response, form) {
+    let li = "";
+    if (
+      typeof response.responseJSON.message === "object" ||
+      typeof response.responseJSON.message === "array"
+    ) {
+      response.responseJSON.message.forEach((row) => {
+        li += `<li>${row}</li>`;
+      });
+    } else {
+      li = `<li>${response.responseJSON.message}</li>`;
+    }
+    const html = `<div class="alert alert-danger fade show custom_alert">
+                  <ul class="m-0">
+                    ${li}
+                  </ul>
+                </div>`;
+    form.prepend(html);
+  }
+</script>
+
+
+</html>
