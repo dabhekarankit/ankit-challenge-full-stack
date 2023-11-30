@@ -8,11 +8,16 @@ Clone repositories
 git clone https://github.com/dabhekarankit/ankit-challenge-full-stack.git
 ```
 
-Run below commands
+Run below commands for copy .env.example => .env
+
+```
+copy .env.example .env
+```
+
+Run below command for install all packages
 
 ```
 npm i
-cp .env.example .env
 ```
 
 Set DB config in .env file
@@ -37,7 +42,7 @@ Steps for set up a Google Cloud Project and Enable the Google Drive API
 ```
 O_AUTH_CLIENT_ID=
 O_AUTH_CLIENT_SECRET=
-O_AUTH_REDIRECT_URL=http://localhost:3000/oauth2callback
+O_AUTH_REDIRECT_URL=http://{YOUR_HOST}:{YOUR_PORT}/oauth2callback
 ```
 
 Run project in Local
